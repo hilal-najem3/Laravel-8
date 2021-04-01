@@ -6,17 +6,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Jetstream\HasProfilePhoto;
-use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\Admins\ResetPasswordNotification;
 
 class Admin extends Authenticatable
 {
-    use HasApiTokens;
-    use HasFactory;
-    use HasProfilePhoto;
-    use Notifiable;
-    use TwoFactorAuthenticatable;
+    use HasFactory, Notifiable;
+
+    protected $guard = "admin";
 
     /**
      * The attributes that are mass assignable.
@@ -38,8 +34,6 @@ class Admin extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
     ];
 
     /**
@@ -52,11 +46,13 @@ class Admin extends Authenticatable
     ];
 
     /**
-     * The accessors to append to the model's array form.
+     * Send the password reset notification.
      *
-     * @var array
+     * @param  string  $token
+     * @return void
      */
-    protected $appends = [
-        'profile_photo_url',
-    ];
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
 }
